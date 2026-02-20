@@ -22,6 +22,9 @@ class Config:
     # Langflow API key (optional, for authentication)
     LANGFLOW_API_KEY = os.getenv("LANGFLOW_API_KEY", "")
     
+    # Gemini API key (required for Langflow workflow)
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+    
     # Langflow Flow ID (optional, if using specific flow)
     LANGFLOW_FLOW_ID = os.getenv("LANGFLOW_FLOW_ID", "")
     

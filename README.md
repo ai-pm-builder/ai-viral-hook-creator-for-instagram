@@ -17,6 +17,7 @@ A Streamlit web application that generates viral Instagram hooks for food conten
 
 - Python 3.8 or higher
 - Langflow API instance (local or remote)
+- Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
 - pip package manager
 
 ### Installation
@@ -54,9 +55,12 @@ A Streamlit web application that generates viral Instagram hooks for food conten
 5. **Update `.env` file**
    ```env
    LANGFLOW_API_URL=http://localhost:7860/api/v1/run
-   LANGFLOW_API_KEY=your_api_key_here  # Optional
-   LANGFLOW_FLOW_ID=your_flow_id       # Optional
+   LANGFLOW_API_KEY=your_langflow_api_key_here  # Optional
+   GEMINI_API_KEY=your_gemini_api_key_here      # Required for Langflow workflow
+   LANGFLOW_FLOW_ID=your_flow_id               # Optional
    ```
+   
+   **Note**: Get your Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
 
 6. **Run the application**
    ```bash
@@ -90,6 +94,7 @@ Create a `.env` file in the project root with the following variables:
 |----------|-------------|----------|---------|
 | `LANGFLOW_API_URL` | Langflow API endpoint URL | Yes | `http://localhost:7860/api/v1/run` |
 | `LANGFLOW_API_KEY` | API key for authentication | No | (empty) |
+| `GEMINI_API_KEY` | Gemini API key for Langflow workflow | Yes | (empty) |
 | `LANGFLOW_FLOW_ID` | Specific flow ID to use | No | (empty) |
 | `REQUEST_TIMEOUT` | Request timeout in seconds | No | `30` |
 
@@ -105,7 +110,12 @@ Create a `.env` file in the project root with the following variables:
    - Example: `https://your-langflow-instance.com/api/v1/run`
    - Update `LANGFLOW_API_URL` in `.env`
 
-3. **Langflow Flow JSON**:
+3. **Gemini API Key**:
+   - Obtain your Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+   - Add it to your `.env` file as `GEMINI_API_KEY`
+   - This key is used within your Langflow workflow to power the AI hook generation
+
+4. **Langflow Flow JSON**:
    - Place your Langflow flow JSON file in the project root as `langflow_flow.json`
    - The app will use this configuration when making API calls
 
