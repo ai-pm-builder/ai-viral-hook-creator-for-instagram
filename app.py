@@ -4,7 +4,7 @@ Integrates with Langflow API to generate hook recommendations.
 """
 
 import streamlit as st
-from langflow_client import LangflowClient
+from instagram_hook_chain import run_full_chain
 from config import Config
 import time
 
@@ -99,8 +99,8 @@ st.markdown("""
 
 def initialize_session_state():
     """Initialize session state variables."""
-    if "hooks" not in st.session_state:
-        st.session_state.hooks = []
+    if "results" not in st.session_state:
+        st.session_state.results = {}
     if "last_description" not in st.session_state:
         st.session_state.last_description = ""
 
@@ -133,53 +133,66 @@ def display_input_section():
     return video_description, generate_button
 
 
-def display_hooks(hooks: list):
-    """Display generated hooks in formatted cards."""
-    if not hooks:
+def display_hooks(results: dict):
+    """Display generated hooks and production card in formatted layout."""
+    if not results:
         return
     
-    st.markdown("### 🎯 Generated Viral Hooks")
+    # Display the final winning hook/production card
+    if "production_card" in results:
+        st.markdown("### 🏆 Winning Hook Production Card")
+        st.markdown(f"""
+        <div style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 20px; border-radius: 15px; color: white; margin-bottom: 25px;">
+            <div style="font-size: 1.2rem; white-space: pre-wrap;">{results['production_card']}</div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        with st.expander("📋 View Winning Hook Analysis"):
+            st.markdown(results["winner_analysis"])
+
+    # Display all generated hooks
+    st.markdown("### 🎯 All Candidate Hooks")
     st.markdown("---")
     
+    # Extract hooks from generated_hooks string
+    import re
+    hooks_text = results.get("generated_hooks", "")
+    hooks = re.findall(r"HOOK \d+: (.*?)(?=HOOK \d+:|$)", hooks_text, re.DOTALL)
+    
+    if not hooks:
+        hooks = [hooks_text]
+
     for idx, hook in enumerate(hooks, 1):
         hook_html = f"""
         <div class="hook-card">
             <div class="hook-number">Hook #{idx}</div>
-            <div class="hook-text">{hook}</div>
+            <div class="hook-text">{hook.strip()}</div>
         </div>
         """
         st.markdown(hook_html, unsafe_allow_html=True)
-        
-        # Copy button for each hook
-        col1, col2 = st.columns([5, 1])
-        with col2:
-            if st.button("📋 Copy", key=f"copy_{idx}"):
-                st.write(f"Copied: {hook[:50]}...")
-                st.code(hook, language=None)
+    
+    # Display Simulation if available
+    if "priya_simulation" in results:
+        with st.expander("🔬 View Persona Simulation (Priya)"):
+            st.markdown(results["priya_simulation"])
 
 
 def generate_hooks(video_description: str):
-    """Generate hooks using Langflow API."""
+    """Generate hooks using LangChain workflow."""
     try:
         # Validate configuration
         Config.validate()
         
-        # Initialize client
-        client = LangflowClient()
-        
         # Show loading state
-        with st.spinner("🤖 Generating viral hooks... This may take a moment."):
-            # Call Langflow API
-            response = client.generate_hooks(video_description)
-            
-            # Parse response
-            hooks = client.parse_hooks_response(response)
+        with st.spinner("🤖 Running AI Content Stratgist Chain... This may take a moment."):
+            # Call LangChain workflow
+            results = run_full_chain(video_description)
             
             # Store in session state
-            st.session_state.hooks = hooks
+            st.session_state.results = results
             st.session_state.last_description = video_description
             
-            return hooks, None
+            return results, None
             
     except Exception as e:
         error_message = str(e)
@@ -199,42 +212,43 @@ def main():
         if not video_description or len(video_description.strip()) < 10:
             st.error("⚠️ Please enter a more detailed description (at least 10 characters).")
         else:
-            hooks, error = generate_hooks(video_description.strip())
+            results, error = generate_hooks(video_description.strip())
             
             if error:
                 st.markdown(f'<div class="error-message">❌ Error: {error}</div>', unsafe_allow_html=True)
-                st.info("💡 Make sure your Langflow API is running and the URL is correct in your .env file.")
-            elif hooks:
-                st.success("✅ Hooks generated successfully!")
-                display_hooks(hooks)
+                st.info("💡 Make sure your GEMINI_API_KEY is correct in your .env file.")
+            elif results:
+                st.success("✅ Workflow complete!")
+                display_hooks(results)
     
-    # Display previous hooks if available
-    elif st.session_state.hooks:
+    # Display previous result if available
+    elif st.session_state.results:
         st.info("💡 Enter a new description above to generate more hooks, or view your previous results below:")
-        display_hooks(st.session_state.hooks)
+        display_hooks(st.session_state.results)
     
     # Sidebar with instructions
     with st.sidebar:
         st.markdown("## 📖 How to Use")
         st.markdown("""
         1. **Describe your video**: Enter a brief description of the food video you want to create
-        2. **Click Generate**: The AI will analyze your description and create viral hooks
-        3. **Copy & Use**: Copy the hooks you like and use them for your Instagram content
+        2. **Click Generate**: The AI will run a 4-step workflow:
+            - Generate candidate hooks
+            - Simulate person reaction (Priya)
+            - Rank hooks based on evidence
+            - Create final production card
+        3. **Copy & Use**: Use the production card for your shoot!
         
         ### 🔧 Setup
         Make sure you have:
-        - Langflow API running
-        - `.env` file configured with `LANGFLOW_API_URL`
-        - Optional: `LANGFLOW_API_KEY` if authentication is required
+        - `.env` file configured with `GEMINI_API_KEY`
         """)
         
         st.markdown("---")
         st.markdown("### ⚙️ Configuration")
-        st.code(f"API URL: {Config.LANGFLOW_API_URL}", language=None)
-        if Config.LANGFLOW_API_KEY:
-            st.code(f"API Key: {'*' * len(Config.LANGFLOW_API_KEY)}", language=None)
+        if Config.GEMINI_API_KEY:
+            st.code(f"Gemini API Key: {'*' * 8}{Config.GEMINI_API_KEY[-4:]}", language=None)
         else:
-            st.info("No API key configured")
+            st.warning("⚠️ No Gemini API key configured")
 
 
 if __name__ == "__main__":
