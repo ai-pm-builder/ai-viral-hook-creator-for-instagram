@@ -1,22 +1,36 @@
 # 🍔 Viral Hook Generator
 
-A Streamlit web application that generates viral Instagram hooks for food content using Langflow AI integration. Simply describe your video idea, and the app will generate engaging hook recommendations to help your content go viral.
+A professional-grade Streamlit web application that generates viral Instagram hooks for food content using a specialized **4-Prompt LangChain Workflow**. Simply describe your recipe or video idea, and the system will generate, test, rank, and finalize the most high-performance hook for your audience.
 
 ## ✨ Features
 
-- **AI-Powered Hook Generation**: Uses Langflow API to generate creative and engaging hooks
-- **Food Content Focus**: Specialized for Instagram food content creators
-- **Beautiful UI**: Modern, responsive interface with gradient styling
-- **Easy to Use**: Simple input form - just describe your video and get hooks
-- **Copy Functionality**: One-click copy for each generated hook
-- **Error Handling**: Graceful error messages and helpful troubleshooting tips
+- **Strategic LangChain Workflow**: Moves beyond simple generation to include persona testing and scoring.
+- **Advanced Persona Simulation**: Tests hooks against a "Priya" persona—a 28-year-old Indian woman mid-scroll.
+- **Evidence-Based Ranking**: Uses content strategist logic to score hooks on Hold Rate, Watch Time, and Shareability.
+- **Production-Ready Output**: Generates a "Production Card" with exact spoken VO, text overlays, and visual setup.
+- **Beautiful UI**: Premium gradient-styled Streamlit interface for a professional experience.
+
+## 🧠 Workflow & Logic
+
+The system operates using a **Sequential LangChain Chain** that simulates a full creative agency process:
+
+1.  **Viral Hook Generation**: Brainstorms 5 unique hooks using 6 proven psychological patterns (Neurological Pattern Interrupt, Loss Aversion, Curiosity Gap, Time-Collapse, Identity-Targeted, and Social Proof).
+2.  **Priya Persona Simulation**: The AI inhabits the life of a specific audience member ("Priya") to provide an "unfiltered" reaction to each hook, including internal monologues and scroll/watch decisions.
+3.  **Evidence-Based Scoring**: A Senior Content Strategist agent analyzes the simulation data to score each hook out of 37 points, focusing on 3-second hold rate, watch time potential, and share probability.
+4.  **Production Card Finalization**: The winning hook is "surgically" improved and converted into a ready-to-shoot production brief with text overlay guides, spoken scripts, and visual frame descriptions.
+
+## 🛠️ Tools Used
+
+- **LangChain**: The core framework used to architect the sequential chain and manage prompt inputs/outputs.
+- **Google Gemini 2.5 Flash**: The generative engine powering all 4 stages of the workflow with high-speed reasoning.
+- **Streamlit**: Used to build the modern, interactive frontend.
+- **Python Dotenv**: Manages sensitive API keys and configuration.
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-- Python 3.8 or higher
-- Langflow API instance (local or remote)
+- Python 3.9+
 - Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
 - pip package manager
 
@@ -28,41 +42,19 @@ A Streamlit web application that generates viral Instagram hooks for food conten
    cd "AI viral reel generator"
    ```
 
-2. **Create a virtual environment** (recommended)
-   ```bash
-   python -m venv venv
-   
-   # On Windows
-   venv\Scripts\activate
-   
-   # On macOS/Linux
-   source venv/bin/activate
-   ```
-
-3. **Install dependencies**
+2. **Install dependencies**
    ```bash
    pip install -r requirements.txt
    ```
 
-4. **Configure environment variables**
-   ```bash
-   # Copy the example file
-   cp .env.example .env
-   
-   # Edit .env file with your Langflow API details
-   ```
-
-5. **Update `.env` file**
+3. **Configure environment variables**
+   Create a `.env` file in the root directory:
    ```env
-   LANGFLOW_API_URL=http://localhost:7860/api/v1/run
-   LANGFLOW_API_KEY=your_langflow_api_key_here  # Optional
-   GEMINI_API_KEY=your_gemini_api_key_here      # Required for Langflow workflow
-   LANGFLOW_FLOW_ID=your_flow_id               # Optional
+   GEMINI_API_KEY=your_gemini_api_key_here
+   REQUEST_TIMEOUT=60
    ```
-   
-   **Note**: Get your Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
 
-6. **Run the application**
+4. **Run the application**
    ```bash
    streamlit run app.py
    ```
@@ -152,24 +144,22 @@ streamlit run app.py --server.port 8501
 
 ### Common Issues
 
-**Issue**: "Could not connect to Langflow API"
-- **Solution**: Check if Langflow is running and verify the `LANGFLOW_API_URL` in `.env`
 
 **Issue**: "Request timed out"
 - **Solution**: Increase `REQUEST_TIMEOUT` in `.env` or check your network connection
 
 **Issue**: "Invalid JSON response"
-- **Solution**: Verify your Langflow flow is returning valid JSON responses
+- **Solution**: Verify your Langchain flow is returning valid JSON responses
 
 **Issue**: No hooks displayed
-- **Solution**: Check the Langflow response format. The app tries multiple parsing strategies, but you may need to adjust `parse_hooks_response()` in `langflow_client.py`
+- **Solution**: Check the Langchain response format. The app tries multiple parsing strategies, but you may need to adjust `parse_hooks_response()` in `langchain_client.py`
 
 ### Getting Help
 
-1. Check the Langflow API documentation
+1. Check the Langchain API documentation
 2. Verify your `.env` configuration
 3. Check the Streamlit terminal for detailed error messages
-4. Review the Langflow flow JSON structure
+4. Review the Langchain flow JSON structure
 
 ## 📝 License
 
