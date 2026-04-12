@@ -139,42 +139,45 @@ def display_hooks(results: dict):
         return
     
     # Display the final winning hook/production card
-    if "production_card" in results:
-        st.markdown("### 🏆 Winning Hook Production Card")
+    if "final_output" in results and results["final_output"]:
+        st.markdown("### 🏆 Final Production Card")
         st.markdown(f"""
         <div style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); padding: 20px; border-radius: 15px; color: white; margin-bottom: 25px;">
-            <div style="font-size: 1.2rem; white-space: pre-wrap;">{results['production_card']}</div>
+            <div style="font-size: 1.2rem; white-space: pre-wrap;">{results['final_output']}</div>
         </div>
         """, unsafe_allow_html=True)
         
-        with st.expander("📋 View Winning Hook Analysis"):
-            st.markdown(results["winner_analysis"])
 
-    # Display all generated hooks
-    st.markdown("### 🎯 All Candidate Hooks")
+    # Display Iteration History
+    st.markdown("### 🔄 Iteration History")
     st.markdown("---")
     
-    # Extract hooks from generated_hooks string
-    import re
-    hooks_text = results.get("generated_hooks", "")
-    hooks = re.findall(r"HOOK \d+: (.*?)(?=HOOK \d+:|$)", hooks_text, re.DOTALL)
-    
-    if not hooks:
-        hooks = [hooks_text]
-
-    for idx, hook in enumerate(hooks, 1):
-        hook_html = f"""
-        <div class="hook-card">
-            <div class="hook-number">Hook #{idx}</div>
-            <div class="hook-text">{hook.strip()}</div>
-        </div>
-        """
-        st.markdown(hook_html, unsafe_allow_html=True)
-    
-    # Display Simulation if available
-    if "priya_simulation" in results:
-        with st.expander("🔬 View Persona Simulation (Priya)"):
-            st.markdown(results["priya_simulation"])
+    if "history" in results:
+        for attempt in results["history"]:
+            iteration = attempt.get("iteration", "?")
+            hook = attempt.get("hook", "")
+            manager_decision = attempt.get("manager_decision", "")
+            
+            is_appr = attempt.get("is_approved", False)
+            bg_color = "#d4edda" if is_appr else "#f8d7da"
+            text_color = "#155724" if is_appr else "#721c24"
+            
+            st.markdown(f"""
+            <div style="background-color: {bg_color}; border-radius: 5px; padding: 15px; margin-bottom: 10px; color: {text_color}">
+                <strong>Iteration {iteration}:</strong> <span style="font-size: 1.2em">"{hook}"</span>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            with st.expander(f"View Feedback for Iteration {iteration}"):
+                st.markdown("**Programmatic Checks:**")
+                st.markdown(attempt.get("programmatic_feedback", "N/A"))
+                
+                st.markdown("**Audience Verifiers (Personas):**")
+                for fdbk in attempt.get("verifier_feedback", []):
+                    st.markdown(fdbk)
+                    
+                st.markdown("**Manager Decision:**")
+                st.markdown(manager_decision)
 
 
 def generate_hooks(video_description: str):
@@ -231,11 +234,12 @@ def main():
         st.markdown("## 📖 How to Use")
         st.markdown("""
         1. **Describe your video**: Enter a brief description of the food video you want to create
-        2. **Click Generate**: The AI will run a 4-step workflow:
-            - Generate candidate hooks
-            - Simulate person reaction (Priya)
-            - Rank hooks based on evidence
-            - Create final production card
+        2. **Click Generate**: The AI will run a Multi-Agent workflow:
+            - **Generator Agent**: Creates an optimized hook.
+            - **Verifier Personas**: 3 target audience Indian females react to it.
+            - **Manager Agent**: Checks rules (<10 words, no filler) and approves/rejects based on reactions.
+            - Will iterate up to 3 times to produce the perfect hook!
+            - **Finalizer Agent**: Creates final production card.
         3. **Copy & Use**: Use the production card for your shoot!
         
         ### 🔧 Setup
